@@ -15,7 +15,7 @@ int hexdump(const char *filename) {
     size_t offset = 0;
 
     while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        printf("%08zx  ", offset);
+        printf("%04zx  ", offset);
 
         for (size_t i = 0; i < bytesRead; i++) {
             printf("%02x ", buffer[i]);
