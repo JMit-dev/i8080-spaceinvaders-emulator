@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "disassembler.h"
 
 int disassemble8080(unsigned char *codeBuffer, int pc) {
@@ -287,4 +289,33 @@ int disassemble8080(unsigned char *codeBuffer, int pc) {
     printf("\n");
 
     return opbytes;
+}
+
+void disassembleROM(const char *filename) {
+    FILE *rom = fopen(filename, "rb");
+    if (rom == NULL) {
+        printf("Error: Couldn't open %s\n", filename);
+        exit(1);
+    }
+
+    fseek(rom, 0, SEEK_END);
+    int romSize = ftell(rom);
+    fseek(rom, 0, SEEK_SET);
+
+    unsigned char *buffer = (unsigned char *)malloc(romSize);
+    if (buffer == NULL) {
+        printf("Error: Couldn't allocate memory\n");
+        fclose(rom);
+        exit(1);
+    }
+
+    fread(buffer, romSize, 1, rom);
+    fclose(rom);
+
+    int pc = 0;
+    while (pc < romSize) {
+        pc += disassemble8080(buffer, pc);
+    }
+
+    free(buffer);
 }

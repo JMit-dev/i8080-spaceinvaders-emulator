@@ -1,6 +1,7 @@
 #ifndef DISASSEMBLER_H
 #define DISASSEMBLER_H
 
-void disassemble8080(unsigned char *codeBuffer, int pc);
+int disassemble8080(unsigned char *codeBuffer, int pc);
+void disassembleROM(const char *filename);
 
 #endif
