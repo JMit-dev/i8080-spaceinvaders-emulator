@@ -27,6 +27,7 @@ typedef struct State8080 {
     uint8_t int_enable;
 } State8080;
 
+int parity(uint8_t value);
 void unimplementedInstruction(State8080* state);
 void emulate8080Op(State8080* state);
 

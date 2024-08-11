@@ -3,6 +3,15 @@
 
 #include "i8080.h"
 
+int parity(uint8_t value) {
+    int count = 0;
+    while (value) {
+        count += value & 1;
+        value >>= 1;
+    }
+    return !(count & 1);
+}
+
 void unimplementedInstruction(State8080* state) {     
     printf("Error: Unimplemented instruction at 0x%04x: 0x%02x\n", state->pc, state->memory[state->pc]);
     exit(1);
@@ -83,7 +92,7 @@ void emulate8080Op(State8080* state) {
         case 0x3E: unimplementedInstruction(state); break;
         case 0x3F: unimplementedInstruction(state); break;
         case 0x40: unimplementedInstruction(state); break;
-        
+
         case 0x41: state->b = state->c; break;
 
         case 0x42: state->b = state->d; break;
@@ -150,13 +159,40 @@ void emulate8080Op(State8080* state) {
         case 0x7D: unimplementedInstruction(state); break;
         case 0x7E: unimplementedInstruction(state); break;
         case 0x7F: unimplementedInstruction(state); break;
-        case 0x80: unimplementedInstruction(state); break;
-        case 0x81: unimplementedInstruction(state); break;
+        
+        case 0x80: {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->b;
+            state->cc.z = ((answer & 0xFF) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xFF);
+            state->cc.p = parity(answer & 0xFF);
+            state->a = answer & 0xFF;
+        } break;
+
+        case 0x81: {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) state->c;
+            state->cc.z = ((answer & 0xFF) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xFF);
+            state->cc.p = parity(answer & 0xFF);
+            state->a = answer & 0xFF;
+        } break;
+
         case 0x82: unimplementedInstruction(state); break;
         case 0x83: unimplementedInstruction(state); break;
         case 0x84: unimplementedInstruction(state); break;
         case 0x85: unimplementedInstruction(state); break;
-        case 0x86: unimplementedInstruction(state); break;
+
+        case 0x86: {
+            uint16_t offset = (state->h<<8) | (state->l);
+            uint16_t answer = (uint16_t) state->a + state->memory[offset];
+            state->cc.z = ((answer & 0xFF) == 0);
+            state->cc.s = ((answer & 0x80) != 0);
+            state->cc.cy = (answer > 0xFF);
+            state->cc.p = parity(answer & 0xFF);
+            state->a = answer & 0xFF;
+        } break;
+
         case 0x87: unimplementedInstruction(state); break;
         case 0x88: unimplementedInstruction(state); break;
         case 0x89: unimplementedInstruction(state); break;
@@ -220,7 +256,16 @@ void emulate8080Op(State8080* state) {
         case 0xC3: unimplementedInstruction(state); break;
         case 0xC4: unimplementedInstruction(state); break;
         case 0xC5: unimplementedInstruction(state); break;
-        case 0xC6: unimplementedInstruction(state); break;
+
+        case 0xC6: {
+            uint16_t answer = (uint16_t) state->a + (uint16_t) opcode[1];
+            state->cc.z = ((answer & 0xFF) == 0);
+            state->cc.s = ((answer  & 0x80) != 0);
+            state->cc.cy = (answer > 0xFF);
+            state->cc.p = parity(answer & 0xFF);
+            state->a = answer & 0xFF;
+        } break;
+
         case 0xC7: unimplementedInstruction(state); break;
         case 0xC8: unimplementedInstruction(state); break;
         case 0xC9: unimplementedInstruction(state); break;
