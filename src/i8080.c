@@ -4,35 +4,35 @@
 #include "i8080.h"
 #include "opcodes.h"
 
-int parity(int x, int size) {
-    int parity = 0;
-    for (int i = 0; i < size; i++) {
-        parity += x & 1;
-        x = x >> 1;
+int parity(uint8_t value) {
+    int count = 0;
+    while (value) {
+        count += value & 1;
+        value >>= 1;
     }
-    return (parity % 2 == 0);
+    return !(count & 1);
 }
 
 void logicFlags(State8080 *state) {
-    state->cc.cy = 0;
-    state->cc.ac = 0;
     state->cc.z = (state->a == 0);
     state->cc.s = (0x80 == (state->a & 0x80));
-    state->cc.p = parity(state->a, 8);
+    state->cc.p = parity(state->a);
+    state->cc.cy = 0;
+    state->cc.ac = 0;
 }
 
 void arithFlags(State8080 *state, uint16_t res) {
     state->cc.z = ((res & 0xff) == 0);
     state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xff, 8);
+    state->cc.p = parity(res & 0xff);
     state->cc.cy = (res > 0xff);
 }
 
 void bcdArithFlags(State8080 *state, uint16_t res) {
-    state->cc.cy = (res > 0xff);
     state->cc.z = ((res & 0xff) == 0);
     state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xff, 8);
+    state->cc.p = parity(res & 0xff);
+    state->cc.cy = (res > 0xff);
     state->cc.ac = (res > 0x09);
 }
 
@@ -45,9 +45,9 @@ void emulate8080Op(State8080* state) {
     unsigned char *opcode = &state->memory[state->pc];
 
     switch (*opcode) {
-        case 0x00: break;
+        case 0x00: break;  // NOP
 
-        case 0x01: {
+        case 0x01: {  // LXI B, D16
             LXI(&state->b, &state->c, opcode);
             state->pc += 2;
         } break;
@@ -116,11 +116,11 @@ void emulate8080Op(State8080* state) {
         case 0x3F: unimplementedInstruction(state); break;
         case 0x40: unimplementedInstruction(state); break;
 
-        case 0x41: state->b = state->c; break;
+        case 0x41: state->b = state->c; break;  // MOV B,C
 
-        case 0x42: state->b = state->d; break;
+        case 0x42: state->b = state->d; break;  // MOV B,D
 
-        case 0x43: state->b = state->e; break;
+        case 0x43: state->b = state->e; break;  // MOV B,D
 
         case 0x44: unimplementedInstruction(state); break;
         case 0x45: unimplementedInstruction(state); break;
@@ -183,20 +183,16 @@ void emulate8080Op(State8080* state) {
         case 0x7E: unimplementedInstruction(state); break;
         case 0x7F: unimplementedInstruction(state); break;
         
-        case 0x80: {
-            ADD(state, state->b);
-        } break;
+        case 0x80: ADD(state, state->b); break;  // ADD B
 
-        case 0x81: {
-            ADD(state, state->c);
-        } break;
+        case 0x81: ADD(state, state->c); break;  // ADD C
 
         case 0x82: unimplementedInstruction(state); break;
         case 0x83: unimplementedInstruction(state); break;
         case 0x84: unimplementedInstruction(state); break;
         case 0x85: unimplementedInstruction(state); break;
 
-        case 0x86: {
+        case 0x86: {  // ADD M
             uint16_t offset = (state->h << 8) | (state->l);
             ADD(state, state->memory[offset]);
         } break;
@@ -265,7 +261,7 @@ void emulate8080Op(State8080* state) {
         case 0xC4: unimplementedInstruction(state); break;
         case 0xC5: unimplementedInstruction(state); break;
 
-        case 0xC6: {
+        case 0xC6: {  // ADI D8
             ADD(state, opcode[1]);
             state->pc += 1;
         } break;

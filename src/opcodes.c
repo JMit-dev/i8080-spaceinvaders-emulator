@@ -44,7 +44,7 @@ void CMP(State8080 *state, uint8_t var) {
     uint16_t result = state->a - var;
     state->cc.z = (result == 0);
     state->cc.s = (0x80 == (result & 0x80));
-    state->cc.p = parity(result, 8);
+    state->cc.p = parity(result);
     state->cc.cy = (state->a < var);
 }
 
