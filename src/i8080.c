@@ -23,28 +23,33 @@ void logicFlags(State8080 *state) {
 }
 
 void arithFlags(State8080 *state, uint16_t res) {
-    state->cc.z = ((res & 0xff) == 0);
+    state->cc.z = ((res & 0xFF) == 0);
     state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xff);
-    state->cc.cy = (res > 0xff);
+    state->cc.p = parity(res & 0xFF);
+    state->cc.cy = (res > 0xFF);
 }
 
 void bcdArithFlags(State8080 *state, uint16_t res) {
-    state->cc.z = ((res & 0xff) == 0);
+    state->cc.z = ((res & 0xFF) == 0);
     state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xff);
-    state->cc.cy = (res > 0xff);
+    state->cc.p = parity(res & 0xFF);
+    state->cc.cy = (res > 0xFF);
     state->cc.ac = (res > 0x09);
 }
 
 void unimplementedInstruction(State8080* state) {     
-    printf("Error: Unimplemented instruction at 0x%04x: 0x%02x\n", state->pc, state->memory[state->pc]);
-    exit(1);
+	printf ("Error: Unimplemented instruction\n");
+	state->pc--;
+	disassemble8080(state->memory, state->pc);
+	printf("\n");
+	exit(1);
 }
 
 void emulate8080Op(State8080* state) {
     uint8_t *opcode = &state->memory[state->pc];
     disassemble8080(state->memory, state->pc);
+
+    state->pc += 1;
 
     switch (*opcode) {
         case 0x00: break;  // NOP
@@ -498,6 +503,4 @@ void emulate8080Op(State8080* state) {
     printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",    
             state->a, state->b, state->c, state->d,    
             state->e, state->h, state->l, state->sp);
-
-    state->pc += 1;
 }

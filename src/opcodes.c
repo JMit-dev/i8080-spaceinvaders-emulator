@@ -60,6 +60,7 @@ void LDA(State8080 *state, uint8_t *opcode) {
 void STA(State8080 *state, uint8_t *opcode) {
     uint16_t address = (opcode[2] << 8) | opcode[1];
     state->memory[address] = state->a;
+    state->pc += 2;
 }
 
 void LHLD(State8080 *state, uint8_t *opcode) {
