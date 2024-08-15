@@ -170,6 +170,14 @@ void INR(State8080 *state, uint8_t *reg) {
     arithFlags(state, *reg);
 }
 
+void DAD(State8080 *state, uint32_t regPair) {
+	uint32_t hl = (state->h << 8) | state->l;
+	uint32_t result = hl + regPair;
+	state->cc.cy = ((result & 0xFFFF0000) > 0);
+	state->h = (result & 0xFF00) >> 8;
+	state->l = (result & 0xFF);
+}
+
 void DCR(State8080 *state, uint8_t *reg) {
     *reg -= 1;
     arithFlags(state, *reg);
