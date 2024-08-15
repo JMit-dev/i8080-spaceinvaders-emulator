@@ -3,9 +3,10 @@
 
 #include "i8080.h"
 #include "opcodes.h"
+#include "disassembler.h"
 
 int parity(uint8_t value) {
-    int count = 0;
+    int32_t count = 0;
     while (value) {
         count += value & 1;
         value >>= 1;
@@ -42,7 +43,8 @@ void unimplementedInstruction(State8080* state) {
 }
 
 void emulate8080Op(State8080* state) {
-    unsigned char *opcode = &state->memory[state->pc];
+    uint8_t *opcode = &state->memory[state->pc];
+    disassemble8080(state->memory, state->pc);
 
     switch (*opcode) {
         case 0x00: break;  // NOP
@@ -65,7 +67,9 @@ void emulate8080Op(State8080* state) {
         case 0x0C: unimplementedInstruction(state); break;
         case 0x0D: unimplementedInstruction(state); break;
         case 0x0E: unimplementedInstruction(state); break;
-        case 0x0F: unimplementedInstruction(state); break;
+
+        case 0x0F: RRC(state); break;  // RRC
+
         case 0x10: unimplementedInstruction(state); break;
         case 0x11: unimplementedInstruction(state); break;
         case 0x12: unimplementedInstruction(state); break;
@@ -81,7 +85,9 @@ void emulate8080Op(State8080* state) {
         case 0x1C: unimplementedInstruction(state); break;
         case 0x1D: unimplementedInstruction(state); break;
         case 0x1E: unimplementedInstruction(state); break;
-        case 0x1F: unimplementedInstruction(state); break;
+
+        case 0x1F: RAR(state); break;  // RAR
+
         case 0x20: unimplementedInstruction(state); break;
         case 0x21: unimplementedInstruction(state); break;
         case 0x22: unimplementedInstruction(state); break;
@@ -97,7 +103,9 @@ void emulate8080Op(State8080* state) {
         case 0x2C: unimplementedInstruction(state); break;
         case 0x2D: unimplementedInstruction(state); break;
         case 0x2E: unimplementedInstruction(state); break;
-        case 0x2F: unimplementedInstruction(state); break;
+
+        case 0x2F: CMA(state); break;  //CMA (not) 
+
         case 0x30: unimplementedInstruction(state); break;
         case 0x31: unimplementedInstruction(state); break;
         case 0x32: unimplementedInstruction(state); break;
@@ -172,7 +180,12 @@ void emulate8080Op(State8080* state) {
         case 0x73: unimplementedInstruction(state); break;
         case 0x74: unimplementedInstruction(state); break;
         case 0x75: unimplementedInstruction(state); break;
-        case 0x76: unimplementedInstruction(state); break;
+
+        case 0x76: {  // HLT
+            printf("HLT instruction executed, halting CPU\n");
+            exit(0);
+        } break;
+
         case 0x77: unimplementedInstruction(state); break;
         case 0x78: unimplementedInstruction(state); break;
         case 0x79: unimplementedInstruction(state); break;
@@ -255,11 +268,22 @@ void emulate8080Op(State8080* state) {
         case 0xBE: unimplementedInstruction(state); break;
         case 0xBF: unimplementedInstruction(state); break;
         case 0xC0: unimplementedInstruction(state); break;
-        case 0xC1: unimplementedInstruction(state); break;
-        case 0xC2: unimplementedInstruction(state); break;
-        case 0xC3: unimplementedInstruction(state); break;
+
+        case 0xC1: POP(state, &state->b, &state->c); break;  // POP B
+
+        case 0xC2: {  // JNZ
+            if (state->cc.z == 0) {
+                JMP(state, opcode);
+            } else {
+                state->pc += 2;
+            }
+        }
+
+        case 0xC3: JMP(state, opcode); break;  // JMP
+
         case 0xC4: unimplementedInstruction(state); break;
-        case 0xC5: unimplementedInstruction(state); break;
+
+        case 0xC5: PUSH(state, state->b, state->c); break;  // PUSH B
 
         case 0xC6: {  // ADI D8
             ADD(state, opcode[1]);
@@ -268,22 +292,34 @@ void emulate8080Op(State8080* state) {
 
         case 0xC7: unimplementedInstruction(state); break;
         case 0xC8: unimplementedInstruction(state); break;
-        case 0xC9: unimplementedInstruction(state); break;
+
+        case 0xC9: RET(state); break;
+
         case 0xCA: unimplementedInstruction(state); break;
         case 0xCB: unimplementedInstruction(state); break;
         case 0xCC: unimplementedInstruction(state); break;
-        case 0xCD: unimplementedInstruction(state); break;
+
+        case 0xCD: CALL(state, opcode); break;  // CALL
+
         case 0xCE: unimplementedInstruction(state); break;
         case 0xCF: unimplementedInstruction(state); break;
         case 0xD0: unimplementedInstruction(state); break;
         case 0xD1: unimplementedInstruction(state); break;
         case 0xD2: unimplementedInstruction(state); break;
-        case 0xD3: unimplementedInstruction(state); break;
+
+        case 0xD3: {  // OUT
+            state->pc += 1;  // skip byte for now
+        } break;
+
         case 0xD4: unimplementedInstruction(state); break;
         case 0xD5: unimplementedInstruction(state); break;
         case 0xD6: unimplementedInstruction(state); break;
         case 0xD7: unimplementedInstruction(state); break;
-        case 0xD8: unimplementedInstruction(state); break;
+
+        case 0xD8: {  // IN
+            state->pc += 1;  // skip byte for now
+        } break;
+
         case 0xD9: unimplementedInstruction(state); break;
         case 0xDA: unimplementedInstruction(state); break;
         case 0xDB: unimplementedInstruction(state); break;
@@ -297,7 +333,12 @@ void emulate8080Op(State8080* state) {
         case 0xE3: unimplementedInstruction(state); break;
         case 0xE4: unimplementedInstruction(state); break;
         case 0xE5: unimplementedInstruction(state); break;
-        case 0xE6: unimplementedInstruction(state); break;
+
+        case 0xE6: {  // ANI byte
+            ANA(state, opcode[1]);
+            state->pc += 1;
+        } break;
+
         case 0xE7: unimplementedInstruction(state); break;
         case 0xE8: unimplementedInstruction(state); break;
         case 0xE9: unimplementedInstruction(state); break;
@@ -308,24 +349,42 @@ void emulate8080Op(State8080* state) {
         case 0xEE: unimplementedInstruction(state); break;
         case 0xEF: unimplementedInstruction(state); break;
         case 0xF0: unimplementedInstruction(state); break;
-        case 0xF1: unimplementedInstruction(state); break;
+
+        case 0xF1: POP_PSW(state); break;  // POP PSW
+
         case 0xF2: unimplementedInstruction(state); break;
-        case 0xF3: unimplementedInstruction(state); break;
+
+        case 0xF3: state->int_enable = 0; break;  // DI
+
         case 0xF4: unimplementedInstruction(state); break;
-        case 0xF5: unimplementedInstruction(state); break;
+
+        case 0xF5: PUSH_PSW(state); break;  // PUSH PSW
+
         case 0xF6: unimplementedInstruction(state); break;
         case 0xF7: unimplementedInstruction(state); break;
         case 0xF8: unimplementedInstruction(state); break;
         case 0xF9: unimplementedInstruction(state); break;
         case 0xFA: unimplementedInstruction(state); break;
-        case 0xFB: unimplementedInstruction(state); break;
+
+        case 0xFB: state->int_enable = 1; break;  // EI
+
         case 0xFC: unimplementedInstruction(state); break;
         case 0xFD: unimplementedInstruction(state); break;
-        case 0xFE: unimplementedInstruction(state); break;
+
+        case 0xFE: {  // CPI byte
+            CMP(state, opcode[1]); 
+            state->pc += 1;
+        } break;
+
         case 0xFF: unimplementedInstruction(state); break;
 
         default: unimplementedInstruction(state); break;
     }
+    printf("\tC=%d,P=%d,S=%d,Z=%d\n", state->cc.cy, state->cc.p,    
+            state->cc.s, state->cc.z);    
+    printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",    
+            state->a, state->b, state->c, state->d,    
+            state->e, state->h, state->l, state->sp);
 
     state->pc += 1;
 }

@@ -1,28 +1,27 @@
-#include "i8080.h"
 #include "opcodes.h"
 
 void ADD(State8080 *state, uint8_t addend) {
     uint16_t result = (uint16_t)state->a + (uint16_t)addend;
     arithFlags(state, result);
-    state->a = result & 0xff;
+    state->a = result & 0xFF;
 }
 
 void ADC(State8080 *state, uint8_t addend) {
     uint16_t result = (uint16_t)state->a + (uint16_t)addend + (uint16_t)state->cc.cy;
     arithFlags(state, result);
-    state->a = result & 0xff;
+    state->a = result & 0xFF;
 }
 
 void SUB(State8080 *state, uint8_t subtrahend) {
     uint16_t result = (uint16_t)state->a - (uint16_t)subtrahend;
     arithFlags(state, result);
-    state->a = result & 0xff;
+    state->a = result & 0xFF;
 }
 
 void SBB(State8080 *state, uint8_t subtrahend) {
     uint16_t result = (uint16_t)state->a - (uint16_t)subtrahend - (uint16_t)state->cc.cy;
     arithFlags(state, result);
-    state->a = result & 0xff;
+    state->a = result & 0xFF;
 }
 
 void ANA(State8080 *state, uint8_t var) {
@@ -48,28 +47,28 @@ void CMP(State8080 *state, uint8_t var) {
     state->cc.cy = (state->a < var);
 }
 
-void LXI(uint8_t *msbReg, uint8_t *lsbReg, unsigned char *opcode) {
+void LXI(uint8_t *msbReg, uint8_t *lsbReg, uint8_t *opcode) {
     *lsbReg = opcode[1];
     *msbReg = opcode[2];
 }
 
-void LDA(State8080 *state, unsigned char *opcode) {
+void LDA(State8080 *state, uint8_t *opcode) {
     uint16_t address = (opcode[2] << 8) | opcode[1];
     state->a = state->memory[address];
 }
 
-void STA(State8080 *state, unsigned char *opcode) {
+void STA(State8080 *state, uint8_t *opcode) {
     uint16_t address = (opcode[2] << 8) | opcode[1];
     state->memory[address] = state->a;
 }
 
-void LHLD(State8080 *state, unsigned char *opcode) {
+void LHLD(State8080 *state, uint8_t *opcode) {
     uint16_t memLocation = (opcode[2] << 8) | opcode[1];
     state->l = state->memory[memLocation];
     state->h = state->memory[memLocation + 1];
 }
 
-void SHLD(State8080 *state, unsigned char *opcode) {
+void SHLD(State8080 *state, uint8_t *opcode) {
     uint16_t memLocation = (opcode[2] << 8) | opcode[1];
     state->memory[memLocation] = state->l;
     state->memory[memLocation + 1] = state->h;
@@ -104,14 +103,14 @@ void POP_PSW(State8080 *state) {
     state->sp += 2;
 }
 
-void JMP(State8080 *state, unsigned char *opcode) {
+void JMP(State8080 *state, uint8_t *opcode) {
     state->pc = (opcode[2] << 8) | opcode[1];
 }
 
-void CALL(State8080 *state, unsigned char *opcode) {
+void CALL(State8080 *state, uint8_t *opcode) {
     uint16_t ret = state->pc + 2;
-    state->memory[state->sp - 1] = (ret >> 8) & 0xff;
-    state->memory[state->sp - 2] = (ret & 0xff);
+    state->memory[state->sp - 1] = (ret >> 8) & 0xFF;
+    state->memory[state->sp - 2] = (ret & 0xFF);
     state->sp -= 2;
     state->pc = (opcode[2] << 8) | opcode[1];
 }
@@ -154,11 +153,11 @@ void CMC(State8080 *state) {
 }
 
 void DAA(State8080 *state) {
-    uint8_t lsb = state->a & 0x0f;
+    uint8_t lsb = state->a & 0x0F;
     if (lsb > 0x09 || state->cc.ac) {
         state->a += 0x06;
     }
-    uint8_t msb = state->a & 0xf0;
+    uint8_t msb = state->a & 0xF0;
     if (msb > 0x90 || state->cc.cy) {
         state->a += 0x60;
         state->cc.cy = 1;

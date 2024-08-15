@@ -3,8 +3,8 @@
 
 #include "disassembler.h"
 
-int disassemble8080(unsigned char *codeBuffer, int pc) {
-    unsigned char *code = &codeBuffer[pc];
+int disassemble8080(uint8_t *codeBuffer, uint16_t pc) {
+    uint8_t *code = &codeBuffer[pc];
     int opbytes = 1;
     printf("%04x ", pc);
 
