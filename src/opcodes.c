@@ -1,5 +1,37 @@
 #include "opcodes.h"
 
+int parity(uint8_t value) {
+    int32_t count = 0;
+    while (value) {
+        count += value & 1;
+        value >>= 1;
+    }
+    return !(count & 1);
+}
+
+void logicFlags(State8080 *state) {
+    state->cc.z = (state->a == 0);
+    state->cc.s = (0x80 == (state->a & 0x80));
+    state->cc.p = parity(state->a);
+    state->cc.cy = 0;
+    state->cc.ac = 0;
+}
+
+void arithFlags(State8080 *state, uint16_t res) {
+    state->cc.z = ((res & 0xFF) == 0);
+    state->cc.s = (0x80 == (res & 0x80));
+    state->cc.p = parity(res & 0xFF);
+    state->cc.cy = (res > 0xFF);
+}
+
+void bcdArithFlags(State8080 *state, uint16_t res) {
+    state->cc.z = ((res & 0xFF) == 0);
+    state->cc.s = (0x80 == (res & 0x80));
+    state->cc.p = parity(res & 0xFF);
+    state->cc.cy = (res > 0xFF);
+    state->cc.ac = (res > 0x09);
+}
+
 void ADD(State8080 *state, uint8_t addend) {
     uint16_t result = (uint16_t)state->a + (uint16_t)addend;
     arithFlags(state, result);

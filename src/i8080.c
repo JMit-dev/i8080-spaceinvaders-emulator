@@ -5,38 +5,6 @@
 #include "opcodes.h"
 #include "disassembler.h"
 
-int parity(uint8_t value) {
-    int32_t count = 0;
-    while (value) {
-        count += value & 1;
-        value >>= 1;
-    }
-    return !(count & 1);
-}
-
-void logicFlags(State8080 *state) {
-    state->cc.z = (state->a == 0);
-    state->cc.s = (0x80 == (state->a & 0x80));
-    state->cc.p = parity(state->a);
-    state->cc.cy = 0;
-    state->cc.ac = 0;
-}
-
-void arithFlags(State8080 *state, uint16_t res) {
-    state->cc.z = ((res & 0xFF) == 0);
-    state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xFF);
-    state->cc.cy = (res > 0xFF);
-}
-
-void bcdArithFlags(State8080 *state, uint16_t res) {
-    state->cc.z = ((res & 0xFF) == 0);
-    state->cc.s = (0x80 == (res & 0x80));
-    state->cc.p = parity(res & 0xFF);
-    state->cc.cy = (res > 0xFF);
-    state->cc.ac = (res > 0x09);
-}
-
 void unimplementedInstruction(State8080* state) {     
 	printf ("Error: Unimplemented instruction\n");
 	state->pc--;
@@ -45,7 +13,7 @@ void unimplementedInstruction(State8080* state) {
 	exit(1);
 }
 
-void emulate8080Op(State8080* state) {
+int emulate8080(State8080* state) {
     uint8_t *opcode = &state->memory[state->pc];
     disassemble8080(state->memory, state->pc);
 
@@ -428,14 +396,14 @@ void emulate8080Op(State8080* state) {
 
         case 0xD6: unimplementedInstruction(state); break;
         case 0xD7: unimplementedInstruction(state); break;
+        case 0xD8: unimplementedInstruction(state); break;
+        case 0xD9: unimplementedInstruction(state); break;
+        case 0xDA: unimplementedInstruction(state); break;
 
-        case 0xD8: {  // IN
+        case 0xDB: {  // IN
             state->pc += 1;  // skip byte for now
         } break;
 
-        case 0xD9: unimplementedInstruction(state); break;
-        case 0xDA: unimplementedInstruction(state); break;
-        case 0xDB: unimplementedInstruction(state); break;
         case 0xDC: unimplementedInstruction(state); break;
         case 0xDD: unimplementedInstruction(state); break;
         case 0xDE: unimplementedInstruction(state); break;
@@ -503,4 +471,6 @@ void emulate8080Op(State8080* state) {
     printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",    
             state->a, state->b, state->c, state->d,    
             state->e, state->h, state->l, state->sp);
+
+    return 0;
 }

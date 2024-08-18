@@ -27,11 +27,7 @@ typedef struct State8080 {
     uint8_t int_enable;
 } State8080;
 
-int parity(uint8_t value);
-void logicFlags(State8080 *state);
-void arithFlags(State8080 *state, uint16_t res);
-void bcdArithFlags(State8080 *state, uint16_t res);
 void unimplementedInstruction(State8080* state);
-void emulate8080Op(State8080* state);
+int emulate8080(State8080* state);
 
 #endif

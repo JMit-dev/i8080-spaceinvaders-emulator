@@ -5,6 +5,11 @@
 
 #include "i8080.h"
 
+int parity(uint8_t value);
+void logicFlags(State8080 *state);
+void arithFlags(State8080 *state, uint16_t res);
+void bcdArithFlags(State8080 *state, uint16_t res);
+
 void ADC(State8080 *state, uint8_t addend);
 void ADD(State8080 *state, uint8_t addend);
 void ANA(State8080 *state, uint8_t var);
