@@ -22,6 +22,7 @@ void resetEmulator(Emulator* emulator) {
 void runEmulator(Emulator* emulator) {
     int done = 0;
     while (!done) {
+        handleInput();
         done = emulate8080(emulator->state, readPort, writePort);
     }
 }

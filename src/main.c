@@ -4,6 +4,7 @@
 #include "hexdump.h"
 #include "disassembler.h"
 #include "emulator.h"
+#include "io.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -24,10 +25,12 @@ int main(int argc, char *argv[]) {
         disassembleROM(filename);
         return 0;
     } else if (!strcmp(option, "run")) {
+        initializeIO();
         Emulator emulator;
         initializeEmulator(&emulator, filename);
         runEmulator(&emulator);
         freeEmulator(&emulator);
+        shutdownIO();
         return 0;
     } else {
         printf("Unknown option: %s\n", option);
