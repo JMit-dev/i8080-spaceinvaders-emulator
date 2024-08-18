@@ -27,7 +27,7 @@ typedef struct State8080 {
     uint8_t int_enable;
 } State8080;
 
-void unimplementedInstruction(State8080* state);
-int emulate8080(State8080* state);
+void unimplementedInstruction(State8080* emulator);
+int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t));
 
 #endif

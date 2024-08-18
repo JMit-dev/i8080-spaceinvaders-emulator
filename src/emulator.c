@@ -4,6 +4,7 @@
 
 #include "emulator.h"
 #include "memory.h"
+#include "io.h"
 
 void initializeEmulator(Emulator* emulator, const char* filename) {
     emulator->state = calloc(1, sizeof(State8080));
@@ -21,7 +22,7 @@ void resetEmulator(Emulator* emulator) {
 void runEmulator(Emulator* emulator) {
     int done = 0;
     while (!done) {
-        done = emulate8080(emulator->state);
+        done = emulate8080(emulator->state, readPort, writePort);
     }
 }
 

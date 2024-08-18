@@ -6,14 +6,14 @@
 #include "disassembler.h"
 
 void unimplementedInstruction(State8080* state) {     
-	printf ("Error: Unimplemented instruction\n");
+	printf("Error: Unimplemented instruction\n");
 	state->pc--;
 	disassemble8080(state->memory, state->pc);
 	printf("\n");
 	exit(1);
 }
 
-int emulate8080(State8080* state) {
+int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t)) {
     uint8_t *opcode = &state->memory[state->pc];
     disassemble8080(state->memory, state->pc);
 
@@ -387,7 +387,10 @@ int emulate8080(State8080* state) {
         case 0xD2: unimplementedInstruction(state); break;
 
         case 0xD3: {  // OUT D8
-            state->pc += 1;  // skip byte for now
+            // uint8_t port = opcode[1];
+            // writePort(port, state->a);
+            // state->pc += 2;
+            state->pc += 1;  // skip for now
         } break;
 
         case 0xD4: unimplementedInstruction(state); break;
@@ -401,7 +404,10 @@ int emulate8080(State8080* state) {
         case 0xDA: unimplementedInstruction(state); break;
 
         case 0xDB: {  // IN
-            state->pc += 1;  // skip byte for now
+            // uint8_t port = opcode[1];
+            // state->a = readPort(port);
+            // state->pc += 2;
+            state->pc += 1;  // skip for now
         } break;
 
         case 0xDC: unimplementedInstruction(state); break;

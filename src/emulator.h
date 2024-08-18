@@ -4,7 +4,7 @@
 #include "i8080.h"
 
 typedef struct Emulator {
-    State8080 *state;
+    State8080* state;
 } Emulator;
 
 void initializeEmulator(Emulator* emulator, const char* filename);
