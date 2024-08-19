@@ -32,7 +32,7 @@ void runEmulator(Emulator* emulator) {
         uint32_t currentTime = SDL_GetTicks();
         if (currentTime - lastInterruptTime >= 16) {  // ~16ms = 1/60th of a second
             if (emulator->state->int_enable) {
-                //  GenerateInterrupt(emulator->state, 2);
+                GenerateInterrupt(emulator->state, 2);  // not tested
                 lastInterruptTime = currentTime;
             }
         }
