@@ -1,6 +1,6 @@
 #ifndef HEXDUMP_H
 #define HEXDUMP_H
 
-int hexdump(const char *filename);
+int hexdump(const char*);
 
 #endif

@@ -13,6 +13,14 @@ void unimplementedInstruction(State8080* state) {
 	exit(1);
 }
 
+void GenerateInterrupt(State8080* state, int interruptNumber) {
+    uint16_t pc = state->pc;
+    PUSH(state, (pc & 0xFF00) >> 8, pc & 0xFF);
+    state->pc = 8 * interruptNumber;
+    state->int_enable = 0;
+}
+
+
 int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t)) {
     uint8_t *opcode = &state->memory[state->pc];
     disassemble8080(state->memory, state->pc);

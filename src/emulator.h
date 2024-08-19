@@ -7,9 +7,9 @@ typedef struct Emulator {
     State8080* state;
 } Emulator;
 
-void initializeEmulator(Emulator* emulator, const char* filename);
-void resetEmulator(Emulator* emulator);
-void runEmulator(Emulator* emulator);
-void freeEmulator(Emulator* emulator);
+void initializeEmulator(Emulator*, const char*);
+void resetEmulator(Emulator*);
+void runEmulator(Emulator*);
+void freeEmulator(Emulator*);
 
 #endif

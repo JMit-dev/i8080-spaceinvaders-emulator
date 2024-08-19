@@ -12,8 +12,8 @@ static uint8_t shiftOffset = 0;
 
 void initializeIO(void);
 void shutdownIO(void);
-uint8_t readPort(uint8_t port);
-void writePort(uint8_t port, uint8_t value);
+uint8_t readPort(uint8_t);
+void writePort(uint8_t, uint8_t);
 void handleInput(void);
 
 #endif

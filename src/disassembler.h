@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-int disassemble8080(uint8_t *codeBuffer, uint16_t pc);
-void disassembleROM(const char *filename);
+int disassemble8080(uint8_t*, uint16_t);
+void disassembleROM(const char*);
 
 #endif
