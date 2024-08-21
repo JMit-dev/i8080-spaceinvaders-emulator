@@ -9,7 +9,7 @@ typedef struct Emulator {
     Display* display;
 } Emulator;
 
-void initializeEmulator(Emulator*, const char*);
+void initializeEmulator(Emulator*);
 void resetEmulator(Emulator*);
 void runEmulator(Emulator*);
 void freeEmulator(Emulator*);

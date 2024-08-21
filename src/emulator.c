@@ -9,10 +9,13 @@
 #include "io.h"
 #include "display.h"
 
-void initializeEmulator(Emulator* emulator, const char* filename) {
+void initializeEmulator(Emulator* emulator) {
     emulator->state = calloc(1, sizeof(State8080));
     initializeMemory(emulator->state, 0x10000);  // 16KB
-    loadROM(emulator->state, filename, 0);
+    loadROM(emulator->state, "./roms/invaders.h", 0x0000);
+    loadROM(emulator->state, "./roms/invaders.g", 0x0800);
+    loadROM(emulator->state, "./roms/invaders.f", 0x1000);
+    loadROM(emulator->state, "./roms/invaders.e", 0x1800);
 
     emulator->display = malloc(sizeof(Display));
     initializeDisplay(emulator->display, 224, 256);  // 224x256 display

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define SDL_MAIN_HANDLED
+
 #include "hexdump.h"
 #include "disassembler.h"
 #include "emulator.h"
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]) {
     } else if (!strcmp(option, "run")) {
         initializeIO();
         Emulator emulator;
-        initializeEmulator(&emulator, filename);
+        initializeEmulator(&emulator);
         runEmulator(&emulator);
         freeEmulator(&emulator);
         shutdownIO();
