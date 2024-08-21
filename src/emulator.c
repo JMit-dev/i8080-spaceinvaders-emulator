@@ -7,11 +7,15 @@
 #include "emulator.h"
 #include "memory.h"
 #include "io.h"
+#include "display.h"
 
 void initializeEmulator(Emulator* emulator, const char* filename) {
     emulator->state = calloc(1, sizeof(State8080));
     initializeMemory(emulator->state, 0x10000);  // 16KB
     loadROM(emulator->state, filename, 0);
+
+    emulator->display = malloc(sizeof(Display));
+    initializeDisplay(emulator->display, 224, 256);  // 224x256 display
 }
 
 //  will break for now, need to implement cartridge
@@ -29,10 +33,12 @@ void runEmulator(Emulator* emulator) {
         handleInput();
         done = emulate8080(emulator->state, readPort, writePort);
 
+        drawDisplay(emulator->display, emulator->state->memory + 0x2400);  // video memory starts at 0x2400
+
         uint32_t currentTime = SDL_GetTicks();
         if (currentTime - lastInterruptTime >= 16) {  // ~16ms = 1/60th of a second
             if (emulator->state->int_enable) {
-                GenerateInterrupt(emulator->state, 2);  // not tested
+                GenerateInterrupt(emulator->state, 2);
                 lastInterruptTime = currentTime;
             }
         }
@@ -40,6 +46,8 @@ void runEmulator(Emulator* emulator) {
 }
 
 void freeEmulator(Emulator* emulator) {
+    destroyDisplay(emulator->display);
+    free(emulator->display);
     freeMemory(emulator->state);
     free(emulator->state);
 }
