@@ -11,27 +11,39 @@ set(SDL_SHARED OFF CACHE BOOL "Build SDL2 as static library")
 set(SDL_STATIC ON CACHE BOOL "Build SDL2 as static library")
 add_subdirectory(external/SDL2)
 
-# Source files
-set(SOURCES
-    src/main.c
-    src/emulator.c
-    src/i8080.c
-    src/opcodes.c
-    src/memory.c
-    src/io.c
-    src/input.c
-    src/platform.c
-    src/display.c
-    src/disassembler.c
-    src/hexdump.c
+# Source files organized by layer
+set(EMULATOR_SOURCES
+    src/emulator/i8080.c
+    src/emulator/opcodes.c
+    src/emulator/memory.c
+    src/emulator/disassembler.c
+)
+
+set(MACHINE_SOURCES
+    src/machine/emulator.c
+    src/machine/io.c
+    src/machine/hexdump.c
+)
+
+set(PLATFORM_SOURCES
+    src/platform/platform.c
+    src/platform/display.c
+    src/platform/input.c
 )
 
 # Executable
-add_executable(intel8080 ${SOURCES})
+add_executable(intel8080
+    src/main.c
+    ${EMULATOR_SOURCES}
+    ${MACHINE_SOURCES}
+    ${PLATFORM_SOURCES}
+)
 
 # Include directories
 target_include_directories(intel8080 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/emulator
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/machine
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform
     ${CMAKE_CURRENT_SOURCE_DIR}/roms
 )
 
