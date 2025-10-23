@@ -31,17 +31,24 @@ void resetEmulator(Emulator* emulator) {
 void runEmulator(Emulator* emulator) {
     int done = 0;
     uint32_t lastInterruptTime = SDL_GetTicks();
+    int whichInterrupt = 1;  // Alternate between RST 1 (mid-frame) and RST 2 (end-frame)
 
     while (!done) {
         handleInput();
         done = emulate8080(emulator->state, readPort, writePort);
 
-        drawDisplay(emulator->display, emulator->state->memory + 0x2400);  // video memory starts at 0x2400
-
         uint32_t currentTime = SDL_GetTicks();
-        if (currentTime - lastInterruptTime >= 16) {  // ~16ms = 1/60th of a second
+        if (currentTime - lastInterruptTime >= 8) {  // ~8ms = 1/120th of a second (two interrupts per frame)
             if (emulator->state->int_enable) {
-                GenerateInterrupt(emulator->state, 2);
+                GenerateInterrupt(emulator->state, whichInterrupt);
+
+                // Only draw on RST 2 (end of frame / VBLANK)
+                if (whichInterrupt == 2) {
+                    drawDisplay(emulator->display, emulator->state->memory + 0x2400);
+                }
+
+                // Alternate between RST 1 and RST 2
+                whichInterrupt = (whichInterrupt == 1) ? 2 : 1;
                 lastInterruptTime = currentTime;
             }
         }
