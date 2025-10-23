@@ -3,6 +3,9 @@ project(i8080-spaceinvaders-emulator C)
 
 set(CMAKE_C_STANDARD 11)
 
+# Debug option for CPU tracing
+option(DEBUG_CPU "Enable CPU instruction tracing and register dumps" OFF)
+
 # Add SDL2 from submodule
 set(SDL_SHARED OFF CACHE BOOL "Build SDL2 as static library")
 set(SDL_STATIC ON CACHE BOOL "Build SDL2 as static library")
@@ -32,6 +35,11 @@ target_include_directories(intel8080 PRIVATE
 
 # Link SDL2
 target_link_libraries(intel8080 PRIVATE SDL2::SDL2-static SDL2::SDL2main)
+
+# Add debug flag if enabled
+if(DEBUG_CPU)
+    target_compile_definitions(intel8080 PRIVATE DEBUG_CPU=1)
+endif()
 
 # Platform-specific settings
 if(WIN32)

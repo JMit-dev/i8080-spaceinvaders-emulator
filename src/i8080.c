@@ -5,6 +5,11 @@
 #include "opcodes.h"
 #include "disassembler.h"
 
+// Debug mode: set to 1 to enable instruction tracing and register dumps
+#ifndef DEBUG_CPU
+#define DEBUG_CPU 0
+#endif
+
 void unimplementedInstruction(State8080* state) {     
 	printf("Error: Unimplemented instruction\n");
 	state->pc--;
@@ -23,7 +28,10 @@ void GenerateInterrupt(State8080* state, int interruptNumber) {
 
 int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t)) {
     uint8_t *opcode = &state->memory[state->pc];
+
+#if DEBUG_CPU
     disassemble8080(state->memory, state->pc);
+#endif
 
     state->pc += 1;
 
@@ -902,11 +910,14 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
 
         default: unimplementedInstruction(state); break;
     }
-    printf("\tC=%d,P=%d,S=%d,Z=%d\n", state->cc.cy, state->cc.p,    
-            state->cc.s, state->cc.z);    
-    printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",    
-            state->a, state->b, state->c, state->d,    
+
+#if DEBUG_CPU
+    printf("\tC=%d,P=%d,S=%d,Z=%d\n", state->cc.cy, state->cc.p,
+            state->cc.s, state->cc.z);
+    printf("\tA $%02x B $%02x C $%02x D $%02x E $%02x H $%02x L $%02x SP %04x\n",
+            state->a, state->b, state->c, state->d,
             state->e, state->h, state->l, state->sp);
+#endif
 
     return 0;
 }
