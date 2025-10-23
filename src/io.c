@@ -1,105 +1,55 @@
 #include "io.h"
-#include "SDL2/SDL.h"
+#include <stdlib.h>
 
-void initializeIO() {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+IOState* io_create(Input* input) {
+    IOState* io = malloc(sizeof(IOState));
+    if (!io) return NULL;
+
+    io->shift_register = 0x0000;
+    io->shift_offset = 0;
+    io->input = input;
+
+    return io;
 }
 
-void shutdownIO() {
-    SDL_Quit();
+void io_destroy(IOState* io) {
+    free(io);
 }
 
-uint8_t readPort(uint8_t port) {
+uint8_t io_read_port(IOState* io, uint8_t port) {
+    if (!io) return 0x00;
+
     switch (port) {
         case 1:
-            return inputPort1;
+            return input_get_port1(io->input);
         case 2:
-            return inputPort2;
+            return input_get_port2(io->input);
         case 3:
-            return (shiftRegister >> (8 - shiftOffset)) & 0xFF;
+            // Hardware shift register read
+            return (io->shift_register >> (8 - io->shift_offset)) & 0xFF;
         default:
             return 0x00;
     }
 }
 
-void writePort(uint8_t port, uint8_t value) {
+void io_write_port(IOState* io, uint8_t port, uint8_t value) {
+    if (!io) return;
+
     switch (port) {
         case 2:
-            shiftOffset = value & 0x07;
+            // Set shift amount
+            io->shift_offset = value & 0x07;
             break;
         case 4:
-            shiftRegister = (shiftRegister >> 8) | (value << 8);
+            // Shift register data write
+            io->shift_register = (io->shift_register >> 8) | (value << 8);
             break;
-        case 3:
-        case 5:
-        case 6:
+        case 3:  // Sound
+        case 5:  // Sound
+        case 6:  // Debug port
+            // Not implemented
             break;
         default:
             break;
-    }
-}
-
-void handleInput() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            exit(0);
-        } else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-            uint8_t keyDown = (event.type == SDL_KEYDOWN) ? 1 : 0;
-
-            switch (event.key.keysym.sym) {
-                // inputPort1 keys
-                case SDLK_c:  // coin inserted
-                    if (keyDown) inputPort1 |= 0x01;
-                    else inputPort1 &= ~0x01;
-                    break;
-                case SDLK_2:  // P2 start button
-                    if (keyDown) inputPort1 |= 0x02;
-                    else inputPort1 &= ~0x02;
-                    break;
-                case SDLK_1:  // P1 start button
-                    if (keyDown) inputPort1 |= 0x04;
-                    else inputPort1 &= ~0x04;
-                    break;
-                case SDLK_SPACE:  // P1 shoot button
-                    if (keyDown) inputPort1 |= 0x10;
-                    else inputPort1 &= ~0x10;
-                    break;
-                case SDLK_LEFT:  // P1 joystick left
-                    if (keyDown) inputPort1 |= 0x20;
-                    else inputPort1 &= ~0x20;
-                    break;
-                case SDLK_RIGHT:  // P1 joystick right
-                    if (keyDown) inputPort1 |= 0x40;
-                    else inputPort1 &= ~0x40;
-                    break;
-
-                // inputPort2 keys
-                case SDLK_t:  // tilt button
-                    if (keyDown) inputPort2 |= 0x04;
-                    else inputPort2 &= ~0x04;
-                    break;
-                case SDLK_b:  // bonus life dipswitch
-                    if (keyDown) inputPort2 |= 0x08;
-                    else inputPort2 &= ~0x08;
-                    break;
-                case SDLK_x:  // P2 shoot button
-                    if (keyDown) inputPort2 |= 0x10;
-                    else inputPort2 &= ~0x10;
-                    break;
-                case SDLK_a:  // P2 joystick left
-                    if (keyDown) inputPort2 |= 0x20;
-                    else inputPort2 &= ~0x20;
-                    break;
-                case SDLK_d:  // P2 joystick right
-                    if (keyDown) inputPort2 |= 0x40;
-                    else inputPort2 &= ~0x40;
-                    break;
-                case SDLK_v:  // coin info dipswitch
-                    if (keyDown) inputPort2 |= 0x80;
-                    else inputPort2 &= ~0x80;
-                    break;
-            }
-        }
     }
 }

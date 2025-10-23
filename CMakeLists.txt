@@ -19,6 +19,8 @@ set(SOURCES
     src/opcodes.c
     src/memory.c
     src/io.c
+    src/input.c
+    src/platform.c
     src/display.c
     src/disassembler.c
     src/hexdump.c

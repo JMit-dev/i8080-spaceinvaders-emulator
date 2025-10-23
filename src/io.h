@@ -2,18 +2,21 @@
 #define IO_H
 
 #include <stdint.h>
+#include "input.h"
 
-#include "i8080.h"
+// Space Invaders I/O port handling
+// Manages hardware shift register and maps input ports
 
-static uint8_t inputPort1 = 0x00;
-static uint8_t inputPort2 = 0x00;
-static uint8_t shiftRegister = 0x00;
-static uint8_t shiftOffset = 0;
+typedef struct IOState {
+    uint16_t shift_register;
+    uint8_t shift_offset;
+    Input* input;
+} IOState;
 
-void initializeIO(void);
-void shutdownIO(void);
-uint8_t readPort(uint8_t);
-void writePort(uint8_t, uint8_t);
-void handleInput(void);
+IOState* io_create(Input* input);
+void io_destroy(IOState* io);
+
+uint8_t io_read_port(IOState* io, uint8_t port);
+void io_write_port(IOState* io, uint8_t port, uint8_t value);
 
 #endif
