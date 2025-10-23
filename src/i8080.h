@@ -25,10 +25,12 @@ typedef struct State8080 {
     uint8_t *memory;
     ConditionCodes cc;
     uint8_t int_enable;
+    uint64_t cycles;  // Total CPU cycles executed
 } State8080;
 
 void unimplementedInstruction(State8080*);
 void GenerateInterrupt(State8080*, int);
 int emulate8080(State8080*, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t));
+int getCyclesForOpcode(uint8_t opcode);
 
 #endif

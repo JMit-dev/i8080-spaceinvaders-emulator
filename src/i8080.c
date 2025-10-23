@@ -10,6 +10,27 @@
 #define DEBUG_CPU 0
 #endif
 
+// Cycle counts for each opcode (256 entries for 0x00-0xFF)
+// For conditional instructions, this is the "not taken" cycle count
+static const uint8_t OPCODE_CYCLES[256] = {
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4,     // 0x00-0x0F
+    4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4,     // 0x10-0x1F
+    4, 10, 16, 5, 5, 5, 7, 4, 4, 10, 16, 5, 5, 5, 7, 4,   // 0x20-0x2F
+    4, 10, 13, 5, 10, 10, 10, 4, 4, 10, 13, 5, 5, 5, 7, 4, // 0x30-0x3F
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,       // 0x40-0x4F
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,       // 0x50-0x5F
+    5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 7, 5,       // 0x60-0x6F
+    7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 7, 5,       // 0x70-0x7F
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,       // 0x80-0x8F
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,       // 0x90-0x9F
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,       // 0xA0-0xAF
+    4, 4, 4, 4, 4, 4, 7, 4, 4, 4, 4, 4, 4, 4, 7, 4,       // 0xB0-0xBF
+    5, 10, 10, 10, 11, 11, 7, 11, 5, 10, 10, 10, 11, 17, 7, 11, // 0xC0-0xCF
+    5, 10, 10, 10, 11, 11, 7, 11, 5, 10, 10, 10, 11, 17, 7, 11, // 0xD0-0xDF
+    5, 10, 10, 18, 11, 11, 7, 11, 5, 5, 10, 5, 11, 17, 7, 11,  // 0xE0-0xEF
+    5, 10, 10, 4, 11, 11, 7, 11, 5, 5, 10, 4, 11, 17, 7, 11    // 0xF0-0xFF
+};
+
 void unimplementedInstruction(State8080* state) {     
 	printf("Error: Unimplemented instruction\n");
 	state->pc--;
@@ -28,6 +49,7 @@ void GenerateInterrupt(State8080* state, int interruptNumber) {
 
 int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort)(uint8_t, uint8_t)) {
     uint8_t *opcode = &state->memory[state->pc];
+    uint8_t cycles = OPCODE_CYCLES[*opcode];
 
 #if DEBUG_CPU
     disassemble8080(state->memory, state->pc);
@@ -566,6 +588,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xC0: {  // RNZ
             if (state->cc.z == 0) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -585,8 +610,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xC4: {  // CNZ adr
             if (state->cc.z == 0) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -608,6 +635,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xC8: {  // RZ
             if (state->cc.z == 1) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -626,8 +656,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xCC: {  // CZ adr
             if (state->cc.z == 1) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -649,6 +681,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xD0: {  // RNC
             if (state->cc.cy == 0) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -671,8 +706,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xD4: {  // CNC adr
             if (state->cc.cy == 0) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -694,6 +731,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xD8: {  // RC
             if (state->cc.cy == 1) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -716,8 +756,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xDC: {  // CC adr
             if (state->cc.cy == 1) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -739,6 +781,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xE0: {  // RPO
             if (state->cc.p == 0) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -759,8 +804,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xE4: {  // CPO adr
             if (state->cc.p == 0) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -782,6 +829,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xE8: {  // RPE
             if (state->cc.p == 1) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -802,8 +852,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xEC: {  // CPE adr
             if (state->cc.p == 1) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -825,6 +877,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xF0: {  // RP
             if (state->cc.s == 0) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -843,8 +898,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xF4: {  // CP adr
             if (state->cc.s == 0) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -867,6 +924,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xF8: {  // RM
             if (state->cc.s == 1) {
                 RET(state);
+                cycles = 11;  // Taken
+            } else {
+                cycles = 5;   // Not taken
             }
         } break;
 
@@ -887,8 +947,10 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
         case 0xFC: {  // CM adr
             if (state->cc.s == 1) {
                 CALL(state, opcode);
+                cycles = 17;  // Taken
             } else {
                 state->pc += 2;
+                cycles = 11;   // Not taken
             }
         } break;
 
@@ -910,6 +972,9 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
 
         default: unimplementedInstruction(state); break;
     }
+
+    // Add cycles for this instruction
+    state->cycles += cycles;
 
 #if DEBUG_CPU
     printf("\tC=%d,P=%d,S=%d,Z=%d\n", state->cc.cy, state->cc.p,

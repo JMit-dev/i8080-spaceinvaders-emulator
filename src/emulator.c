@@ -30,15 +30,20 @@ void resetEmulator(Emulator* emulator) {
 
 void runEmulator(Emulator* emulator) {
     int done = 0;
-    uint32_t lastInterruptTime = SDL_GetTicks();
     int whichInterrupt = 1;  // Alternate between RST 1 (mid-frame) and RST 2 (end-frame)
+
+    // Space Invaders runs at 2MHz
+    // At 60 FPS, each frame is 1/60 second = 33333 cycles (2000000 / 60)
+    // Two interrupts per frame (RST 1 at mid-frame, RST 2 at end-frame)
+    const uint64_t CYCLES_PER_INTERRUPT = 33333 / 2;  // 16666 cycles between interrupts
+    uint64_t nextInterruptCycles = CYCLES_PER_INTERRUPT;
 
     while (!done) {
         handleInput();
         done = emulate8080(emulator->state, readPort, writePort);
 
-        uint32_t currentTime = SDL_GetTicks();
-        if (currentTime - lastInterruptTime >= 8) {  // ~8ms = 1/120th of a second (two interrupts per frame)
+        // Check if it's time for an interrupt (cycle-based)
+        if (emulator->state->cycles >= nextInterruptCycles) {
             if (emulator->state->int_enable) {
                 GenerateInterrupt(emulator->state, whichInterrupt);
 
@@ -49,7 +54,7 @@ void runEmulator(Emulator* emulator) {
 
                 // Alternate between RST 1 and RST 2
                 whichInterrupt = (whichInterrupt == 1) ? 2 : 1;
-                lastInterruptTime = currentTime;
+                nextInterruptCycles += CYCLES_PER_INTERRUPT;
             }
         }
     }
