@@ -5,8 +5,10 @@
 void initializeDisplay(Display *display, int width, int height) {
     display->width = width;
     display->height = height;
-    display->window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+    display->window = SDL_CreateWindow("Space Invaders", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_SetWindowMinimumSize(display->window, width, height);
     display->renderer = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_RenderSetLogicalSize(display->renderer, width, height);
     display->texture = SDL_CreateTexture(display->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
     display->pixels = malloc(width * height * sizeof(uint32_t));
 }
