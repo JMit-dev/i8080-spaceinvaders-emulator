@@ -62,8 +62,8 @@ Emulator* emulator_create(ROMType rom_type) {
             return NULL;
         }
 
-        // Create input handler
-        emu->input = input_create();
+        // Create input handler (try to load from config file, fall back to defaults)
+        emu->input = input_create_from_config("input.cfg");
         if (!emu->input) {
             platform_destroy(emu->platform);
             freeMemory(emu->cpu);
@@ -89,8 +89,10 @@ Emulator* emulator_create(ROMType rom_type) {
         emu->io = NULL;
     }
 
-    // Set global IO state for port callbacks
-    g_io_state = emu->io;
+    // Set global IO state for port callbacks (only for Space Invaders)
+    if (rom_type == ROM_SPACE_INVADERS) {
+        g_io_state = emu->io;
+    }
 
     return emu;
 }

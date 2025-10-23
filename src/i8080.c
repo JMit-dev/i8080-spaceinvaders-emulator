@@ -52,7 +52,7 @@ int emulate8080(State8080* state, uint8_t (*readPort)(uint8_t), void (*writePort
     uint8_t cycles = OPCODE_CYCLES[*opcode];
 
 #if DEBUG_CPU
-    disassemble8080(state->memory, state->pc);
+    disassemble8080(state->memory, state->pc, stdout);
 #endif
 
     state->pc += 1;

@@ -11,6 +11,7 @@ typedef struct Input Input;
 
 // Input lifecycle
 Input* input_create(void);
+Input* input_create_from_config(const char* config_file);
 void input_destroy(Input* input);
 
 // Update input state from platform events
