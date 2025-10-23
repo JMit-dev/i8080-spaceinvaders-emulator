@@ -44,7 +44,7 @@ target_include_directories(intel8080 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/emulator
     ${CMAKE_CURRENT_SOURCE_DIR}/src/machine
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform
-    ${CMAKE_CURRENT_SOURCE_DIR}/roms
+    ${CMAKE_CURRENT_SOURCE_DIR}/rsrc
 )
 
 # Link SDL2
@@ -77,9 +77,14 @@ elseif(UNIX AND NOT APPLE)
     )
 endif()
 
-# Copy ROM files to build directory (if needed)
-file(GLOB ROM_FILES "${CMAKE_CURRENT_SOURCE_DIR}/roms/*.rom")
-foreach(ROM_FILE ${ROM_FILES})
-    get_filename_component(ROM_NAME ${ROM_FILE} NAME)
-    configure_file(${ROM_FILE} ${CMAKE_CURRENT_BINARY_DIR}/${ROM_NAME} COPYONLY)
-endforeach()
+# Copy input.cfg to Debug and Release directories
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/input.cfg
+    ${CMAKE_BINARY_DIR}/Debug/input.cfg
+    COPYONLY
+)
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/rsrc/input.cfg
+    ${CMAKE_BINARY_DIR}/Release/input.cfg
+    COPYONLY
+)

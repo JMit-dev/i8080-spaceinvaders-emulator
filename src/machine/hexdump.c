@@ -35,11 +35,11 @@ static void hexdump_file(const char *filename, FILE* output) {
 void hexdump_space_invaders(FILE* output) {
     fprintf(output, "=== Space Invaders ROM Hex Dump ===\n\n");
     fprintf(output, "--- invaders.h (0x0000-0x07FF) ---\n");
-    hexdump_file("./roms/invaders.h", output);
+    hexdump_file("./rsrc/invaders.h", output);
     fprintf(output, "\n--- invaders.g (0x0800-0x0FFF) ---\n");
-    hexdump_file("./roms/invaders.g", output);
+    hexdump_file("./rsrc/invaders.g", output);
     fprintf(output, "\n--- invaders.f (0x1000-0x17FF) ---\n");
-    hexdump_file("./roms/invaders.f", output);
+    hexdump_file("./rsrc/invaders.f", output);
     fprintf(output, "\n--- invaders.e (0x1800-0x1FFF) ---\n");
-    hexdump_file("./roms/invaders.e", output);
+    hexdump_file("./rsrc/invaders.e", output);
 }

@@ -361,11 +361,11 @@ static void disassemble_file(const char *filename, uint16_t base_addr, FILE* out
 void disassemble_space_invaders(FILE* output) {
     fprintf(output, "=== Space Invaders ROM Disassembly ===\n\n");
     fprintf(output, "--- invaders.h (0x0000-0x07FF) ---\n");
-    disassemble_file("./roms/invaders.h", 0x0000, output);
+    disassemble_file("./rsrc/invaders.h", 0x0000, output);
     fprintf(output, "\n--- invaders.g (0x0800-0x0FFF) ---\n");
-    disassemble_file("./roms/invaders.g", 0x0800, output);
+    disassemble_file("./rsrc/invaders.g", 0x0800, output);
     fprintf(output, "\n--- invaders.f (0x1000-0x17FF) ---\n");
-    disassemble_file("./roms/invaders.f", 0x1000, output);
+    disassemble_file("./rsrc/invaders.f", 0x1000, output);
     fprintf(output, "\n--- invaders.e (0x1800-0x1FFF) ---\n");
-    disassemble_file("./roms/invaders.e", 0x1800, output);
+    disassemble_file("./rsrc/invaders.e", 0x1800, output);
 }
