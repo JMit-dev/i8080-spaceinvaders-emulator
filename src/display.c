@@ -23,7 +23,27 @@ void drawDisplay(Display *display, uint8_t *videoMemory) {
                 int pixelY = display->height - 1 - (y * 8 + bit);
                 int pixelX = x;
 
-                display->pixels[pixelY * display->width + pixelX] = (byte & (1 << bit)) ? 0xFFFFFFFF : 0xFF000000;
+                if (byte & (1 << bit)) {
+                    // Pixel is on - apply color overlay based on Y position
+                    uint32_t color;
+                    if (pixelY < 32) {
+                        // Top area (UFO) - Red
+                        color = 0xFFFF0000;
+                    } else if (pixelY >= 184 && pixelY < 240) {
+                        // Bottom area (Player/Shields) - Green
+                        color = 0xFF00FF00;
+                    } else if (pixelY >= 240) {
+                        // Very bottom (Score area) - White
+                        color = 0xFFFFFFFF;
+                    } else {
+                        // Middle area (Invaders) - White
+                        color = 0xFFFFFFFF;
+                    }
+                    display->pixels[pixelY * display->width + pixelX] = color;
+                } else {
+                    // Pixel is off - black
+                    display->pixels[pixelY * display->width + pixelX] = 0xFF000000;
+                }
             }
         }
     }
