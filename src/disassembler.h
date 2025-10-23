@@ -2,8 +2,10 @@
 #define DISASSEMBLER_H
 
 #include <stdint.h>
+#include <stdio.h>
 
-int disassemble8080(uint8_t*, uint16_t);
-void disassembleROM(const char*);
+int disassemble8080(uint8_t* codeBuffer, uint16_t pc, FILE* output);
+void disassembleROM(const char* filename);
+void disassemble_space_invaders(FILE* output);
 
 #endif

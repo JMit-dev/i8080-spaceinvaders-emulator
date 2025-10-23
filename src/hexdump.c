@@ -3,11 +3,11 @@
 
 #include "hexdump.h"
 
-int hexdump(const char *filename) {
+static void hexdump_file(const char *filename, FILE* output) {
     FILE *file = fopen(filename, "rb");
     if (file == NULL) {
-        perror("Error opening file");
-        return 1;
+        fprintf(stderr, "Error opening file: %s\n", filename);
+        return;
     }
 
     unsigned char buffer[16];
@@ -15,21 +15,31 @@ int hexdump(const char *filename) {
     size_t offset = 0;
 
     while ((bytesRead = fread(buffer, 1, sizeof(buffer), file)) > 0) {
-        printf("%04zx  ", offset);
+        fprintf(output, "%04zx  ", offset);
 
         for (size_t i = 0; i < bytesRead; i++) {
-            printf("%02x ", buffer[i]);
+            fprintf(output, "%02x ", buffer[i]);
         }
 
         for (size_t i = bytesRead; i < 16; i++) {
-            printf("   ");
+            fprintf(output, "   ");
         }
 
-        printf("\n");
-
+        fprintf(output, "\n");
         offset += bytesRead;
     }
 
     fclose(file);
-    return 0;
+}
+
+void hexdump_space_invaders(FILE* output) {
+    fprintf(output, "=== Space Invaders ROM Hex Dump ===\n\n");
+    fprintf(output, "--- invaders.h (0x0000-0x07FF) ---\n");
+    hexdump_file("./roms/invaders.h", output);
+    fprintf(output, "\n--- invaders.g (0x0800-0x0FFF) ---\n");
+    hexdump_file("./roms/invaders.g", output);
+    fprintf(output, "\n--- invaders.f (0x1000-0x17FF) ---\n");
+    hexdump_file("./roms/invaders.f", output);
+    fprintf(output, "\n--- invaders.e (0x1800-0x1FFF) ---\n");
+    hexdump_file("./roms/invaders.e", output);
 }

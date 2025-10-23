@@ -16,7 +16,12 @@ typedef struct Emulator {
     IOState* io;
 } Emulator;
 
-Emulator* emulator_create(void);
+typedef enum {
+    ROM_SPACE_INVADERS,
+    ROM_CPU_DIAG
+} ROMType;
+
+Emulator* emulator_create(ROMType rom_type);
 void emulator_destroy(Emulator* emu);
 void emulator_run(Emulator* emu);
 

@@ -13,7 +13,7 @@ static void port_write_handler(uint8_t port, uint8_t value);
 // Global IO state for port callbacks
 static IOState* g_io_state = NULL;
 
-Emulator* emulator_create(void) {
+Emulator* emulator_create(ROMType rom_type) {
     Emulator* emu = malloc(sizeof(Emulator));
     if (!emu) return NULL;
 
@@ -24,12 +24,26 @@ Emulator* emulator_create(void) {
         return NULL;
     }
 
-    // Load ROM
+    // Load ROM based on type
     initializeMemory(emu->cpu, 0x10000);
-    loadROM(emu->cpu, "./roms/invaders.h", 0x0000);
-    loadROM(emu->cpu, "./roms/invaders.g", 0x0800);
-    loadROM(emu->cpu, "./roms/invaders.f", 0x1000);
-    loadROM(emu->cpu, "./roms/invaders.e", 0x1800);
+
+    switch (rom_type) {
+        case ROM_SPACE_INVADERS:
+            loadROM(emu->cpu, "./roms/invaders.h", 0x0000);
+            loadROM(emu->cpu, "./roms/invaders.g", 0x0800);
+            loadROM(emu->cpu, "./roms/invaders.f", 0x1000);
+            loadROM(emu->cpu, "./roms/invaders.e", 0x1800);
+            break;
+        case ROM_CPU_DIAG:
+            loadROM(emu->cpu, "./roms/cpudiag.bin", 0x0100);
+            // Fix for CP/M BDOS call simulation
+            emu->cpu->memory[0x0000] = 0xC3;  // JMP
+            emu->cpu->memory[0x0001] = 0x00;
+            emu->cpu->memory[0x0002] = 0x01;
+            emu->cpu->memory[0x0005] = 0xC9;  // RET
+            emu->cpu->pc = 0x0100;
+            break;
+    }
 
     // Create platform (SDL2 window and rendering)
     emu->platform = platform_create("Space Invaders", 224, 256);

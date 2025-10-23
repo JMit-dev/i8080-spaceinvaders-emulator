@@ -31,10 +31,10 @@ static const uint8_t OPCODE_CYCLES[256] = {
     5, 10, 10, 4, 11, 11, 7, 11, 5, 5, 10, 4, 11, 17, 7, 11    // 0xF0-0xFF
 };
 
-void unimplementedInstruction(State8080* state) {     
+void unimplementedInstruction(State8080* state) {
 	printf("Error: Unimplemented instruction\n");
 	state->pc--;
-	disassemble8080(state->memory, state->pc);
+	disassemble8080(state->memory, state->pc, stdout);
 	printf("\n");
 	exit(1);
 }
