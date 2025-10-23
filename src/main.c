@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Failed to create emulator\n");
             return 1;
         }
-        emulator_run(emu);
+        emulator_run_headless(emu);
         emulator_destroy(emu);
         return 0;
     }

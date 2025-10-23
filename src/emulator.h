@@ -24,5 +24,6 @@ typedef enum {
 Emulator* emulator_create(ROMType rom_type);
 void emulator_destroy(Emulator* emu);
 void emulator_run(Emulator* emu);
+void emulator_run_headless(Emulator* emu);
 
 #endif

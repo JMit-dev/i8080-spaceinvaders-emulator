@@ -37,42 +37,56 @@ Emulator* emulator_create(ROMType rom_type) {
         case ROM_CPU_DIAG:
             loadROM(emu->cpu, "./roms/cpudiag.bin", 0x0100);
             // Fix for CP/M BDOS call simulation
-            emu->cpu->memory[0x0000] = 0xC3;  // JMP
+            emu->cpu->memory[0x0000] = 0xC3;  // JMP 0x0100
             emu->cpu->memory[0x0001] = 0x00;
             emu->cpu->memory[0x0002] = 0x01;
-            emu->cpu->memory[0x0005] = 0xC9;  // RET
+            emu->cpu->memory[0x0005] = 0xC9;  // RET (for BDOS calls)
+
+            // Fix the stack pointer from 0x06ad to 0x07ad
+            // LXI SP instruction is at offset 0xA9, so memory address is 0x100 + 0xA9 = 0x1A9
+            // The high byte of the address is at 0x1AA
+            emu->cpu->memory[0x1AA] = 0x7;
+
             emu->cpu->pc = 0x0100;
             break;
     }
 
-    // Create platform (SDL2 window and rendering)
-    emu->platform = platform_create("Space Invaders", 224, 256);
-    if (!emu->platform) {
-        freeMemory(emu->cpu);
-        free(emu->cpu);
-        free(emu);
-        return NULL;
-    }
+    // Only create platform/input/io for Space Invaders (not for headless test mode)
+    if (rom_type == ROM_SPACE_INVADERS) {
+        // Create platform (SDL2 window and rendering)
+        emu->platform = platform_create("Space Invaders", 224, 256);
+        if (!emu->platform) {
+            freeMemory(emu->cpu);
+            free(emu->cpu);
+            free(emu);
+            return NULL;
+        }
 
-    // Create input handler
-    emu->input = input_create();
-    if (!emu->input) {
-        platform_destroy(emu->platform);
-        freeMemory(emu->cpu);
-        free(emu->cpu);
-        free(emu);
-        return NULL;
-    }
+        // Create input handler
+        emu->input = input_create();
+        if (!emu->input) {
+            platform_destroy(emu->platform);
+            freeMemory(emu->cpu);
+            free(emu->cpu);
+            free(emu);
+            return NULL;
+        }
 
-    // Create I/O handler
-    emu->io = io_create(emu->input);
-    if (!emu->io) {
-        input_destroy(emu->input);
-        platform_destroy(emu->platform);
-        freeMemory(emu->cpu);
-        free(emu->cpu);
-        free(emu);
-        return NULL;
+        // Create I/O handler
+        emu->io = io_create(emu->input);
+        if (!emu->io) {
+            input_destroy(emu->input);
+            platform_destroy(emu->platform);
+            freeMemory(emu->cpu);
+            free(emu->cpu);
+            free(emu);
+            return NULL;
+        }
+    } else {
+        // For CPU diagnostic test, no platform/input/io needed
+        emu->platform = NULL;
+        emu->input = NULL;
+        emu->io = NULL;
     }
 
     // Set global IO state for port callbacks
@@ -135,6 +149,28 @@ void emulator_run(Emulator* emu) {
             }
         }
     }
+}
+
+// Dummy port handlers for headless mode
+static uint8_t headless_port_read(uint8_t port) {
+    return 0;
+}
+
+static void headless_port_write(uint8_t port, uint8_t value) {
+    // Not used by cpudiag
+}
+
+void emulator_run_headless(Emulator* emu) {
+    if (!emu) return;
+
+    printf("Running CPU diagnostic test...\n\n");
+
+    // Run until HLT instruction
+    while (emu->cpu->memory[emu->cpu->pc] != 0x76) {
+        emulate8080(emu->cpu, headless_port_read, headless_port_write);
+    }
+
+    printf("\n\nCPU halted at PC=0x%04x\n", emu->cpu->pc);
 }
 
 // Port callback handlers (bridge to global IO state)
