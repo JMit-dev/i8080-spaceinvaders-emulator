@@ -29,13 +29,24 @@ Emulator* emulator_create(ROMType rom_type) {
 
     switch (rom_type) {
         case ROM_SPACE_INVADERS:
-            loadROM(emu->cpu, "./rsrc/invaders.h", 0x0000);
-            loadROM(emu->cpu, "./rsrc/invaders.g", 0x0800);
-            loadROM(emu->cpu, "./rsrc/invaders.f", 0x1000);
-            loadROM(emu->cpu, "./rsrc/invaders.e", 0x1800);
+            // Try current directory first (for releases), then rsrc (for development)
+            if (!loadROM(emu->cpu, "invaders.h", 0x0000)) {
+                loadROM(emu->cpu, "./rsrc/invaders.h", 0x0000);
+            }
+            if (!loadROM(emu->cpu, "invaders.g", 0x0800)) {
+                loadROM(emu->cpu, "./rsrc/invaders.g", 0x0800);
+            }
+            if (!loadROM(emu->cpu, "invaders.f", 0x1000)) {
+                loadROM(emu->cpu, "./rsrc/invaders.f", 0x1000);
+            }
+            if (!loadROM(emu->cpu, "invaders.e", 0x1800)) {
+                loadROM(emu->cpu, "./rsrc/invaders.e", 0x1800);
+            }
             break;
         case ROM_CPU_DIAG:
-            loadROM(emu->cpu, "./rsrc/cpudiag.bin", 0x0100);
+            if (!loadROM(emu->cpu, "cpudiag.bin", 0x0100)) {
+                loadROM(emu->cpu, "./rsrc/cpudiag.bin", 0x0100);
+            }
             // Fix for CP/M BDOS call simulation
             emu->cpu->memory[0x0000] = 0xC3;  // JMP 0x0100
             emu->cpu->memory[0x0001] = 0x00;
