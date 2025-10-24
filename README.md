@@ -8,7 +8,7 @@ Built as an educational project to understand low-level CPU emulation, retro gam
 
 ## Build Status
 
-![Build Status](https://github.com/yourusername/i8080-spaceinvaders-emulator/workflows/Build%20Releases/badge.svg)
+![Build Status](https://github.com/JMit-dev/i8080-spaceinvaders-emulator/workflows/Build%20Releases/badge.svg)
 
 ## Screenshots
 
@@ -52,7 +52,7 @@ Download pre-built binaries from [Releases](../../releases).
 
 **Build steps:**
 ```bash
-git clone https://github.com/yourusername/i8080-spaceinvaders-emulator.git
+git clone https://github.com/JMit-dev/i8080-spaceinvaders-emulator.git
 cd i8080-spaceinvaders-emulator
 git submodule update --init --recursive
 cmake -B build -DCMAKE_BUILD_TYPE=Release
