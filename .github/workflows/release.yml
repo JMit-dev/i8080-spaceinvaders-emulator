@@ -24,7 +24,7 @@ jobs:
       - name: Package Windows build
         run: |
           mkdir release-windows
-          copy build\Release\intel8080.exe release-windows\
+          copy build\Release\spaceinvaders.exe release-windows\
           copy build\Release\input.cfg release-windows\
           copy rsrc\invaders.h release-windows\
           copy rsrc\invaders.g release-windows\
@@ -65,14 +65,14 @@ jobs:
       - name: Package Linux build
         run: |
           mkdir -p release-linux
-          cp build/intel8080 release-linux/
+          cp build/spaceinvaders release-linux/
           cp build/Release/input.cfg release-linux/ || cp rsrc/input.cfg release-linux/
           cp rsrc/invaders.h release-linux/
           cp rsrc/invaders.g release-linux/
           cp rsrc/invaders.f release-linux/
           cp rsrc/invaders.e release-linux/
           cp README.md release-linux/ 2>/dev/null || true
-          chmod +x release-linux/intel8080
+          chmod +x release-linux/spaceinvaders
 
       - name: Create Linux tarball
         run: tar -czf i8080-spaceinvaders-linux-x64.tar.gz -C release-linux .

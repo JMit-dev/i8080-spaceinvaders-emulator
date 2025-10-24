@@ -32,7 +32,7 @@ set(PLATFORM_SOURCES
 )
 
 # Executable
-add_executable(intel8080
+add_executable(spaceinvaders
     src/main.c
     ${EMULATOR_SOURCES}
     ${MACHINE_SOURCES}
@@ -40,7 +40,7 @@ add_executable(intel8080
 )
 
 # Include directories
-target_include_directories(intel8080 PRIVATE
+target_include_directories(spaceinvaders PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/emulator
     ${CMAKE_CURRENT_SOURCE_DIR}/src/machine
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform
@@ -48,29 +48,29 @@ target_include_directories(intel8080 PRIVATE
 )
 
 # Link SDL2
-target_link_libraries(intel8080 PRIVATE SDL2::SDL2-static SDL2::SDL2main)
+target_link_libraries(spaceinvaders PRIVATE SDL2::SDL2-static SDL2::SDL2main)
 
 # Add debug flag if enabled
 if(DEBUG_CPU)
-    target_compile_definitions(intel8080 PRIVATE DEBUG_CPU=1)
+    target_compile_definitions(spaceinvaders PRIVATE DEBUG_CPU=1)
 endif()
 
 # Platform-specific settings
 if(WIN32)
     # Windows: Link required system libraries
-    target_link_libraries(intel8080 PRIVATE
+    target_link_libraries(spaceinvaders PRIVATE
         winmm
         imm32
         version
         setupapi
     )
     # Set subsystem to console
-    set_target_properties(intel8080 PROPERTIES
+    set_target_properties(spaceinvaders PROPERTIES
         WIN32_EXECUTABLE FALSE
     )
 elseif(UNIX AND NOT APPLE)
     # Linux: Link required system libraries
-    target_link_libraries(intel8080 PRIVATE
+    target_link_libraries(spaceinvaders PRIVATE
         m
         dl
         pthread

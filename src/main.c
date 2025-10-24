@@ -29,12 +29,8 @@ static void print_usage(const char* prog_name) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        print_usage(argv[0]);
-        return 1;
-    }
-
-    const char *command = argv[1];
+    // Default to "run" if no arguments (allows double-click to launch)
+    const char *command = (argc < 2) ? "run" : argv[1];
 
     if (!strcmp(command, "run")) {
         Emulator* emu = emulator_create(ROM_SPACE_INVADERS);
