@@ -122,7 +122,10 @@ void emulator_run(Emulator* emu) {
     // At 60 FPS: 2000000 / 60 = 33333 cycles per frame
     // Two interrupts per frame: 33333 / 2 = 16666 cycles between interrupts
     const uint64_t CYCLES_PER_INTERRUPT = 16666;
+    const uint32_t MS_PER_FRAME = 16;  // 1000ms / 60fps = 16.67ms per frame
+
     uint64_t next_interrupt_cycles = CYCLES_PER_INTERRUPT;
+    uint32_t next_frame_time = platform_get_ticks() + MS_PER_FRAME;
 
     bool running = true;
     while (running) {
@@ -143,6 +146,13 @@ void emulator_run(Emulator* emu) {
                 // Only render on RST 2 (end of frame / VBLANK)
                 if (which_interrupt == 2) {
                     platform_render_frame(emu->platform, emu->cpu->memory + 0x2400);
+
+                    // Frame rate limiting: wait until it's time for next frame
+                    uint32_t current_time = platform_get_ticks();
+                    if (current_time < next_frame_time) {
+                        platform_delay(next_frame_time - current_time);
+                    }
+                    next_frame_time = platform_get_ticks() + MS_PER_FRAME;
                 }
 
                 // Alternate interrupts
