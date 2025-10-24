@@ -1,0 +1,110 @@
+name: Build Releases
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Package Windows build
+        run: |
+          mkdir release-windows
+          copy build\Release\intel8080.exe release-windows\
+          copy build\Release\input.cfg release-windows\
+          copy rsrc\invaders.h release-windows\
+          copy rsrc\invaders.g release-windows\
+          copy rsrc\invaders.f release-windows\
+          copy rsrc\invaders.e release-windows\
+          copy README.md release-windows\ 2>nul || echo No README
+        shell: cmd
+
+      - name: Create Windows ZIP
+        run: Compress-Archive -Path release-windows\* -DestinationPath i8080-spaceinvaders-windows-x64.zip
+        shell: powershell
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: i8080-spaceinvaders-windows-x64.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libgl1-mesa-dev libglu1-mesa-dev
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Package Linux build
+        run: |
+          mkdir -p release-linux
+          cp build/intel8080 release-linux/
+          cp build/Release/input.cfg release-linux/ || cp rsrc/input.cfg release-linux/
+          cp rsrc/invaders.h release-linux/
+          cp rsrc/invaders.g release-linux/
+          cp rsrc/invaders.f release-linux/
+          cp rsrc/invaders.e release-linux/
+          cp README.md release-linux/ 2>/dev/null || true
+          chmod +x release-linux/intel8080
+
+      - name: Create Linux tarball
+        run: tar -czf i8080-spaceinvaders-linux-x64.tar.gz -C release-linux .
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: i8080-spaceinvaders-linux-x64.tar.gz
+
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            i8080-spaceinvaders-windows-x64.zip
+            i8080-spaceinvaders-linux-x64.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
